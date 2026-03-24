@@ -1,0 +1,16 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "docker" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build . -t samay-hash/node20
+      - run: echo "${{secrets.DOCKERHUB_PASSWORD}}" | docker login -u ${{secrets.samaysamrat}} --password-stdin
+      - run: docker push ${{secrets.samaysamrat}}/node20:latest
