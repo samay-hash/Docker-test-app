@@ -164,6 +164,149 @@ docker-compose up -d --build
 
 ---
 
+## 🔄 Docker Compose – Lifecycle Management
+
+> **Manage the ENTIRE lifecycle of your application with just 3 simple commands!**
+
+### ▶️ 1. Start Services — `docker compose up -d`
+
+```bash
+docker compose up -d
+```
+
+**Kya hota hai (What happens):**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  $ docker compose up -d                                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                                │
+│  Step 1 → Reads docker-compose.yml                            │
+│  Step 2 → Builds image (if not already built)                 │
+│  Step 3 → Creates a network for the services                  │
+│  Step 4 → Creates & starts the container(s)                   │
+│  Step 5 → Runs in detached mode (-d = background)             │
+│                                                                │
+│  ✅ Result: App running at http://localhost:3000               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| Flag | Meaning |
+|------|---------|
+| `-d` | **Detached mode** – container runs in the background, terminal stays free |
+| No `-d` | Logs stream directly in terminal (Ctrl+C to stop) |
+
+---
+
+### ⏹️ 2. Stop Services — `docker compose down`
+
+```bash
+docker compose down
+```
+
+**Kya hota hai (What happens):**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  $ docker compose down                                        │
+├──────────────────────────────────────────────────────────────┤
+│                                                                │
+│  Step 1 → Stops all running containers                        │
+│  Step 2 → Removes the containers                              │
+│  Step 3 → Removes the default network                         │
+│                                                                │
+│  ⚠️  Images & volumes are PRESERVED (not deleted)             │
+│  ✅ Result: Everything cleanly stopped                        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| Variant | What it does |
+|---------|-------------|
+| `docker compose down` | Stops & removes containers + network |
+| `docker compose down -v` | Also removes **volumes** (database data!) |
+| `docker compose down --rmi all` | Also removes **images** |
+
+---
+
+### 🔨 3. Rebuild Services — `docker compose build`
+
+```bash
+docker compose build
+```
+
+**Kya hota hai (What happens):**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  $ docker compose build                                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                                │
+│  Step 1 → Reads Dockerfile for each service                   │
+│  Step 2 → Rebuilds images from scratch (uses cache)           │
+│  Step 3 → New image is ready to be started                    │
+│                                                                │
+│  💡 Use when: Code changed, dependencies updated,             │
+│     or Dockerfile modified                                    │
+│  ✅ Result: Fresh image built, ready for `up -d`              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| Variant | What it does |
+|---------|-------------|
+| `docker compose build` | Builds with cache (fast) |
+| `docker compose build --no-cache` | Full rebuild (ignores cache) |
+| `docker compose up -d --build` | Build + Start in one command 🚀 |
+
+---
+
+### 📝 Declarative Configuration (docker-compose.yml)
+
+> The YAML file provides a **clear and concise** way to define your application's services — **eliminating the need for manual configuration!**
+
+```yaml
+version: "3.8"
+
+services:
+  web:                          # 🏷️ Service name
+    build: .                    # 📂 Build from Dockerfile in current dir
+    ports:
+      - "3000:3000"             # 🔌 Map host:container ports
+    environment:
+      - NODE_ENV=production     # 🌍 Environment variables
+    restart: unless-stopped     # 🔄 Auto-restart on crash
+    healthcheck:                # 💓 Monitor container health
+      test: ["CMD", "wget", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+**Benefits of Declarative Configuration:**
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│  ✅ ONE FILE defines everything → docker-compose.yml          │
+│  ✅ NO more remembering long docker run commands              │
+│  ✅ Version controlled → track changes in Git                 │
+│  ✅ Team friendly → everyone runs the same setup              │
+│  ✅ Environment variables → manage configs cleanly            │
+│  ✅ Reproducible → same result every time, everywhere         │
+└───────────────────────────────────────────────────────────────┘
+```
+
+**Before Docker Compose (manual) ❌:**
+```bash
+docker build -t my-app .
+docker run -d -p 3000:3000 -e NODE_ENV=production --restart unless-stopped --name my-app my-app
+```
+
+**After Docker Compose (declarative) ✅:**
+```bash
+docker compose up -d    # That's it! 🎉
+```
+
+---
+
 ## 🎨 Docker Architecture - Visualized
 
 ```
@@ -207,6 +350,7 @@ docker-compose up -d --build
 ```
 docker-test-app/
 ├── 🐳 Dockerfile                  # Container blueprint
+├── 🐳 docker-compose.yml          # Compose lifecycle config
 ├── 📄 README.md                   # This awesome file!
 ├── 📄 package.json                # Project dependencies
 ├── 📄 index.js                    # Main application
